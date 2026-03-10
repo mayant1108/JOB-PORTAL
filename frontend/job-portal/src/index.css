@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* Base Styles */
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+}
+
+/* Component Styles */
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl 
+           hover:bg-blue-700 transition-all duration-300 
+           shadow-lg hover:shadow-xl transform hover:scale-[1.02];
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-xl 
+           hover:bg-blue-50 transition-all duration-300;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-md hover:shadow-xl 
+           transition-all duration-300 p-6;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl 
+           focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+           outline-none transition-all bg-gray-50;
+  }
+
+  .badge {
+    @apply px-3 py-1 text-sm font-medium rounded-full;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-700;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-700;
+  }
+
+  .badge-error {
+    @apply bg-red-100 text-red-700;
+  }
+
+  .badge-info {
+    @apply bg-blue-100 text-blue-700;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600;
+  }
+
+  .bg-gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 to-blue-800;
+  }
+
+  .bg-gradient-secondary {
+    @apply bg-gradient-to-r from-purple-600 to-purple-800;
+  }
+
+  .glass {
+    @apply bg-white/95 backdrop-blur-md;
+  }
+
+  .shadow-card {
+    @apply shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+}
+
+/* Custom animation delays for staggered effects */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
