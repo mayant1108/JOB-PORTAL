@@ -62,5 +62,14 @@ export const applicationAPI = {
   updateApplicationStatus: (id, status) => apiCall(`/applications/${id}`, 'PUT', { status }),
 };
 
+// Company APIs
+export const companyAPI = {
+  getAllCompanies: () => apiCall('/companies', 'GET'),
+  getCompanyById: (id) => apiCall(`/companies/${id}`, 'GET'),
+  createCompany: (companyData) => apiCall('/companies', 'POST', companyData),
+  updateCompany: (id, companyData) => apiCall(`/companies/${id}`, 'PUT', companyData),
+  deleteCompany: (id) => apiCall(`/companies/${id}`, 'DELETE'),
+};
+
 export default API_BASE_URL;
 

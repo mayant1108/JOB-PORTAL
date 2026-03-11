@@ -1,12 +1,18 @@
-# Frontend-Backend Connection Plan
+# TODO: Add Company Page to Job Portal
 
-## Progress Tracker
+## Backend
+- [x] Create Company model (backend/src/models/Company.js)
+- [x] Create Company controller (backend/src/controllers/companyController.js)
+- [x] Create Company routes (backend/src/routes/companyRoutes.js)
+- [x] Register company routes in server.js
 
-- [x] 1. Update Signup.jsx - Connect to backend using authAPI.register()
-- [x] 2. Update Jobs.jsx - Fetch real jobs from backend using jobAPI
-- [x] 3. Update Dashboard.jsx - Fetch user profile and applications from backend
-- [x] 4. Update Profile.jsx - Connect to backend for profile management
-- [x] 5. Test the connections
+## Frontend
+- [x] Add companyAPI to api.js
+- [x] Create Companies.jsx page
+- [x] Add /companies route in App.jsx
 
-## Status: COMPLETE ✅
+## Testing
+- [x] Run seed to populate companies: `node backend/seed.js` ✅
+- [x] Backend server running on port 5000 ✅
+- [x] Frontend running on port 5174 ✅
 

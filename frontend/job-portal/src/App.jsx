@@ -10,6 +10,7 @@ import Jobs from './pages/Jobs';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
+import Companies from './pages/Companies';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/companies" element={<Companies />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />

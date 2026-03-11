@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Job = require('./src/models/Job');
 const User = require('./src/models/User');
+const Company = require('./src/models/Company');
 
 dotenv.config();
 
@@ -193,7 +194,7 @@ const sampleCompanies = [
     name: 'TechCorp',
     description: 'Leading technology company specializing in enterprise software solutions.',
     industry: 'Technology',
-    size: '1000+ employees',
+    companySize: '1000+ employees',
     location: 'San Francisco, CA',
     logo: '💻',
     website: 'https://techcorp.example.com'
@@ -202,7 +203,7 @@ const sampleCompanies = [
     name: 'DataFlow',
     description: 'Data analytics and processing platform for modern businesses.',
     industry: 'Technology',
-    size: '500-1000 employees',
+    companySize: '500-1000 employees',
     location: 'Remote',
     logo: '⚙️',
     website: 'https://dataflow.example.com'
@@ -211,7 +212,7 @@ const sampleCompanies = [
     name: 'DesignStudio',
     description: 'Creative design agency focused on digital experiences.',
     industry: 'Design',
-    size: '50-200 employees',
+    companySize: '50-200 employees',
     location: 'New York, NY',
     logo: '🎨',
     website: 'https://designstudio.example.com'
@@ -220,7 +221,7 @@ const sampleCompanies = [
     name: 'CloudTech',
     description: 'Cloud infrastructure and DevOps solutions provider.',
     industry: 'Technology',
-    size: '200-500 employees',
+    companySize: '200-500 employees',
     location: 'Austin, TX',
     logo: '☁️',
     website: 'https://cloudtech.example.com'
@@ -229,7 +230,7 @@ const sampleCompanies = [
     name: 'InnovateTech',
     description: 'Innovation-driven tech company building next-gen products.',
     industry: 'Technology',
-    size: '500-1000 employees',
+    companySize: '500-1000 employees',
     location: 'Seattle, WA',
     logo: '📊',
     website: 'https://innovatetech.example.com'
@@ -241,13 +242,18 @@ const seedDatabase = async () => {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/jobportal');
     console.log('Connected to MongoDB');
 
-    // Clear existing jobs
+    // Clear existing data
     await Job.deleteMany({});
-    console.log('Cleared existing jobs');
+    await Company.deleteMany({});
+    console.log('Cleared existing jobs and companies');
 
     // Insert sample jobs
     const jobs = await Job.insertMany(sampleJobs);
     console.log(`Inserted ${jobs.length} sample jobs`);
+
+    // Insert sample companies
+    const companies = await Company.insertMany(sampleCompanies);
+    console.log(`Inserted ${companies.length} sample companies`);
 
     console.log('Database seeded successfully!');
     process.exit(0);
