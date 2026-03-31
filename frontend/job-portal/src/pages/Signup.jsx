@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { saveAuthSession } from '../utils/auth';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -65,8 +66,7 @@ const Signup = () => {
       
       // Call backend API
       const data = await authAPI.register(userData);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      saveAuthSession(data);
       navigate('/dashboard');
     } catch (err) {
       setErrors({ ...errors, submit: err.message || 'Registration failed. Please try again.' });

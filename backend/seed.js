@@ -12,7 +12,8 @@ const sampleJobs = [
     company: 'TechCorp',
     location: 'San Francisco, CA',
     type: 'Full Time',
-    salary: '$120,000 - $150,000',
+    category: 'Engineering',
+    salary: '₹120,000 - ₹150,000',
     description: 'We are looking for an experienced Frontend Developer to join our team. You will be responsible for building and maintaining our web applications using React, TypeScript, and modern web technologies.',
     requirements: [
       '5+ years of experience with React',
@@ -30,7 +31,8 @@ const sampleJobs = [
     company: 'DataFlow',
     location: 'Remote',
     type: 'Full Time',
-    salary: '$110,000 - $140,000',
+    category: 'Engineering',
+    salary: '₹110,000 - ₹140,000',
     description: 'Join our backend team to build scalable APIs and microservices. Work with Node.js, Express, and MongoDB to create powerful server-side applications.',
     requirements: [
       '3+ years of Node.js experience',
@@ -48,7 +50,8 @@ const sampleJobs = [
     company: 'DesignStudio',
     location: 'New York, NY',
     type: 'Full Time',
-    salary: '$90,000 - $120,000',
+    category: 'Design',
+    salary: '₹90,000 - ₹120,000',
     description: 'We need a talented UI/UX Designer to create beautiful and intuitive user interfaces. You will work closely with product teams to design user-centered experiences.',
     requirements: [
       'Portfolio demonstrating UI/UX skills',
@@ -66,7 +69,8 @@ const sampleJobs = [
     company: 'CloudTech',
     location: 'Austin, TX',
     type: 'Full Time',
-    salary: '$130,000 - $160,000',
+    category: 'Engineering',
+    salary: '₹130,000 - ₹160,000',
     description: 'Looking for a DevOps engineer to manage our cloud infrastructure, CI/CD pipelines, and ensure high availability of our services.',
     requirements: [
       'Experience with AWS or GCP',
@@ -84,7 +88,8 @@ const sampleJobs = [
     company: 'InnovateTech',
     location: 'Seattle, WA',
     type: 'Full Time',
-    salary: '$100,000 - $130,000',
+    category: 'Engineering',
+    salary: '₹100,000 - ₹130,000',
     description: 'Lead product development for our flagship applications. Work with stakeholders to define roadmaps and deliver features that users love.',
     requirements: [
       '3+ years of product management experience',
@@ -102,7 +107,8 @@ const sampleJobs = [
     company: 'GrowthLabs',
     location: 'Los Angeles, CA',
     type: 'Full Time',
-    salary: '$60,000 - $80,000',
+    category: 'Marketing',
+    salary: '₹60,000 - ₹80,000',
     description: 'Join our marketing team to develop and execute marketing campaigns across various channels. Drive user acquisition and brand awareness.',
     requirements: [
       '2+ years of marketing experience',
@@ -120,7 +126,8 @@ const sampleJobs = [
     company: 'AI Innovations',
     location: 'Boston, MA',
     type: 'Full Time',
-    salary: '$140,000 - $180,000',
+    category: 'Engineering',
+    salary: '₹140,000 - ₹180,000',
     description: 'Work on cutting-edge AI and machine learning projects. Analyze data, build models, and derive insights to drive business decisions.',
     requirements: [
       'MS/PhD in Computer Science or related field',
@@ -138,7 +145,8 @@ const sampleJobs = [
     company: 'WebSolutions',
     location: 'Remote',
     type: 'Contract',
-    salary: '$80,000 - $100,000',
+    category: 'Engineering',
+    salary: '₹80,000 - ₹100,000',
     description: 'Build end-to-end web applications using modern technologies. Work on varied projects for different clients.',
     requirements: [
       '3+ years of full stack development',
@@ -156,7 +164,8 @@ const sampleJobs = [
     company: 'AppVenture',
     location: 'Miami, FL',
     type: 'Full Time',
-    salary: '$95,000 - $125,000',
+    category: 'Engineering',
+    salary: '₹95,000 - ₹125,000',
     description: 'Develop native mobile applications for iOS and Android. Create engaging mobile experiences for our users.',
     requirements: [
       'Experience with React Native or Flutter',
@@ -174,7 +183,8 @@ const sampleJobs = [
     company: 'StartUp Hub',
     location: 'Chicago, IL',
     type: 'Internship',
-    salary: '$20 - $25/hour',
+    category: 'Engineering',
+    salary: '₹20 - ₹25/hour',
     description: 'Great opportunity for a junior developer to learn and grow. Work on real projects with experienced mentors.',
     requirements: [
       'Basic HTML, CSS, JavaScript skills',

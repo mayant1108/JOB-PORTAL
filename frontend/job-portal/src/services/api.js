@@ -1,9 +1,38 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+import { clearAuthSession, getAuthToken } from '../utils/auth';
 
-// Helper function for making API calls
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || '/api';
+
+const buildQueryString = (params = {}) => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value);
+    }
+  });
+
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
+};
+
+const parseResponseBody = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+};
+
 const apiCall = async (endpoint, method = 'GET', body = null) => {
-  const token = localStorage.getItem('token');
-  
+  const token = getAuthToken();
+
   const options = {
     method,
     headers: {
@@ -12,7 +41,7 @@ const apiCall = async (endpoint, method = 'GET', body = null) => {
   };
 
   if (token) {
-    options.headers['Authorization'] = `Bearer ${token}`;
+    options.headers.Authorization = `Bearer ${token}`;
   }
 
   if (body) {
@@ -21,12 +50,16 @@ const apiCall = async (endpoint, method = 'GET', body = null) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-    const data = await response.json();
-    
+    const data = await parseResponseBody(response);
+
     if (!response.ok) {
-      throw new Error(data.message || 'Something went wrong');
+      if (response.status === 401) {
+        clearAuthSession();
+      }
+
+      throw new Error(data?.message || 'Something went wrong');
     }
-    
+
     return data;
   } catch (error) {
     console.error('API Error:', error);
@@ -34,7 +67,6 @@ const apiCall = async (endpoint, method = 'GET', body = null) => {
   }
 };
 
-// Auth APIs
 export const authAPI = {
   register: (userData) => apiCall('/users/signup', 'POST', userData),
   login: (credentials) => apiCall('/users/login', 'POST', credentials),
@@ -44,27 +76,26 @@ export const authAPI = {
   deleteUser: (id) => apiCall(`/users/${id}`, 'DELETE'),
 };
 
-// Job APIs
 export const jobAPI = {
-  getAllJobs: () => apiCall('/jobs', 'GET'),
+  getAllJobs: (params = {}) => apiCall(`/jobs${buildQueryString(params)}`, 'GET'),
   getJobById: (id) => apiCall(`/jobs/${id}`, 'GET'),
   createJob: (jobData) => apiCall('/jobs', 'POST', jobData),
   updateJob: (id, jobData) => apiCall(`/jobs/${id}`, 'PUT', jobData),
   deleteJob: (id) => apiCall(`/jobs/${id}`, 'DELETE'),
-  getJobsByCompany: (company) => apiCall(`/jobs?company=${company}`, 'GET'),
+  getJobsByCompany: (company) => jobAPI.getAllJobs({ company }),
 };
 
-// Application APIs
 export const applicationAPI = {
   applyForJob: (applicationData) => apiCall('/applications', 'POST', applicationData),
   getMyApplications: () => apiCall('/applications/my', 'GET'),
   getAllApplications: () => apiCall('/applications', 'GET'),
-  updateApplicationStatus: (id, status) => apiCall(`/applications/${id}`, 'PUT', { status }),
+  updateApplicationStatus: (id, status) =>
+    apiCall(`/applications/${id}`, 'PUT', { status }),
 };
 
-// Company APIs
 export const companyAPI = {
-  getAllCompanies: () => apiCall('/companies', 'GET'),
+  getAllCompanies: (params = {}) =>
+    apiCall(`/companies${buildQueryString(params)}`, 'GET'),
   getCompanyById: (id) => apiCall(`/companies/${id}`, 'GET'),
   createCompany: (companyData) => apiCall('/companies', 'POST', companyData),
   updateCompany: (id, companyData) => apiCall(`/companies/${id}`, 'PUT', companyData),
@@ -72,4 +103,3 @@ export const companyAPI = {
 };
 
 export default API_BASE_URL;
-

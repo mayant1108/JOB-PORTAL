@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuthSession, getStoredUser, hasActiveSession } from '../utils/auth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const currentUser = getStoredUser();
+  const isLoggedIn = hasActiveSession();
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  const initials = (currentUser?.name || 'Job Portal')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 
   const publicLinks = [
     { to: '/', label: 'Home', icon: '🏠' },
@@ -23,109 +35,105 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location]);
+  const closeMenu = () => setIsOpen(false);
+
+  const handleLogout = () => {
+    clearAuthSession();
+    closeMenu();
+    navigate('/login');
+  };
 
   const getNavLinkClass = (isActive, isScrolled = true) => {
-    const baseClass = "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center space-x-2";
-    
+    const baseClass =
+      'flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200';
+
     if (isScrolled) {
-      return isActive 
-        ? `${baseClass} text-blue-600 bg-blue-50`
-        : `${baseClass} text-gray-600 hover:text-blue-600 hover:bg-blue-50/50`;
-    } else {
-      return isActive 
-        ? `${baseClass} text-white bg-white/20`
-        : `${baseClass} text-white/90 hover:text-white hover:bg-white/10`;
+      return isActive
+        ? `${baseClass} bg-blue-50 text-blue-600`
+        : `${baseClass} text-gray-600 hover:bg-blue-50/50 hover:text-blue-600`;
     }
+
+    return isActive
+      ? `${baseClass} bg-white/20 text-white`
+      : `${baseClass} text-white/90 hover:bg-white/10 hover:text-white`;
   };
+
+  const renderNavItem = (item, isScrolled = true) => (
+    <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={closeMenu}>
+      {({ isActive }) => (
+        <div className={getNavLinkClass(isActive, isScrolled)}>
+          <span className="text-lg">{item.icon}</span>
+          <span>{item.label}</span>
+        </div>
+      )}
+    </NavLink>
+  );
 
   return (
     <>
-      <nav className={`fixed w-full z-50 transition-all duration-500 ${
-        scrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' 
-          : 'bg-gradient-to-r from-blue-600 to-blue-800 py-4'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav
+        className={`fixed z-50 w-full transition-all duration-500 ${
+          scrolled
+            ? 'bg-white/95 py-2 shadow-lg backdrop-blur-md'
+            : 'bg-gradient-to-r from-blue-600 to-blue-800 py-4'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <NavLink to="/" className="flex items-center space-x-3 group">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ${
-                scrolled ? 'bg-blue-600' : 'bg-white/20'
-              }`}>
+            <NavLink to="/" className="group flex items-center space-x-3" onClick={closeMenu}>
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 ${
+                  scrolled ? 'bg-blue-600' : 'bg-white/20'
+                }`}
+              >
                 <span className="text-2xl">💼</span>
               </div>
-              <div>
-                <span className={`text-2xl font-bold ${
-                  scrolled ? 'text-gray-800' : 'text-white'
-                }`}>
-                  Job<span className={scrolled ? 'text-blue-600' : 'text-yellow-300'}>Portal</span>
-                </span>
-              </div>
+              <span className={`text-2xl font-bold ${scrolled ? 'text-gray-800' : 'text-white'}`}>
+                Job<span className={scrolled ? 'text-blue-600' : 'text-yellow-300'}>Portal</span>
+              </span>
             </NavLink>
 
-            {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center space-x-1">
-              {publicLinks.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                >
-                  {({ isActive }) => (
-                    <div className={getNavLinkClass(isActive, scrolled)}>
-                      <span className="text-lg">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  )}
-                </NavLink>
-              ))}
-
-              {isLoggedIn && privateLinks.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                >
-                  {({ isActive }) => (
-                    <div className={scrolled 
-                      ? (isActive ? "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-purple-600 bg-purple-50" : "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50/50")
-                      : (isActive ? "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-white bg-white/20" : "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-white/90 hover:text-white hover:bg-white/10")
-                    }>
-                      <span className="text-lg">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  )}
-                </NavLink>
-              ))}
+            <div className="hidden items-center space-x-1 lg:flex">
+              {publicLinks.map((item) => renderNavItem(item, scrolled))}
+              {isLoggedIn && privateLinks.map((item) => renderNavItem(item, scrolled))}
             </div>
 
-            {/* Desktop Right Section */}
-            <div className="hidden lg:flex items-center space-x-3">
-              <NavLink to="/admin">
-                {({ isActive }) => (
-                  <div className={scrolled 
-                    ? (isActive ? "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-purple-600 bg-purple-50" : "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50")
-                    : (isActive ? "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-white bg-white/20" : "px-4 py-2.5 rounded-xl text-sm font-medium flex items-center space-x-2 text-white/90 hover:text-white hover:bg-white/10 border border-white/20")
-                  }>
-                    <span>⚙️</span>
-                    <span>Admin</span>
-                  </div>
-                )}
-              </NavLink>
+            <div className="hidden items-center space-x-3 lg:flex">
+              {isAdmin && (
+                <NavLink to="/admin" onClick={closeMenu}>
+                  {({ isActive }) => (
+                    <div
+                      className={
+                        scrolled
+                          ? isActive
+                            ? 'flex items-center space-x-2 rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-600'
+                            : 'flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
+                          : isActive
+                            ? 'flex items-center space-x-2 rounded-xl bg-white/20 px-4 py-2.5 text-sm font-medium text-white'
+                            : 'flex items-center space-x-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white'
+                      }
+                    >
+                      <span>⚙️</span>
+                      <span>Admin</span>
+                    </div>
+                  )}
+                </NavLink>
+              )}
 
               {!isLoggedIn ? (
                 <>
                   <NavLink
                     to="/login"
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    onClick={closeMenu}
+                    className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                       scrolled
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                        ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700'
                         : 'bg-white text-blue-600 hover:bg-blue-50'
                     }`}
                   >
@@ -133,7 +141,8 @@ const Navbar = () => {
                   </NavLink>
                   <NavLink
                     to="/signup"
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    onClick={closeMenu}
+                    className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                       scrolled
                         ? 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
                         : 'border-2 border-white text-white hover:bg-white/10'
@@ -143,188 +152,174 @@ const Navbar = () => {
                   </NavLink>
                 </>
               ) : (
-                <button className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200 ${
-                  scrolled ? 'hover:bg-gray-100' : 'hover:bg-white/10'
-                }`}>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-sm font-bold text-white">JD</span>
-                  </div>
-                  <span className={scrolled ? 'text-gray-700' : 'text-white'}>John Doe</span>
-                </button>
+                <>
+                  <NavLink to="/profile" onClick={closeMenu}>
+                    <div
+                      className={`flex items-center space-x-3 rounded-xl px-3 py-2 transition-all duration-200 ${
+                        scrolled ? 'hover:bg-gray-100' : 'hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500">
+                        <span className="text-sm font-bold text-white">{initials || 'JP'}</span>
+                      </div>
+                      <span className={scrolled ? 'text-gray-700' : 'text-white'}>
+                        {currentUser?.name || 'My Account'}
+                      </span>
+                    </div>
+                  </NavLink>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                      scrolled
+                        ? 'border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        : 'border border-white/20 text-white hover:bg-white/10'
+                    }`}
+                  >
+                    Logout
+                  </button>
+                </>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="lg:hidden">
               <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`relative w-12 h-12 rounded-xl focus:outline-none transition-all duration-300 ${
+                type="button"
+                onClick={() => setIsOpen((open) => !open)}
+                className={`relative h-12 w-12 rounded-xl transition-all duration-300 focus:outline-none ${
                   scrolled ? 'hover:bg-gray-100' : 'hover:bg-white/10'
                 }`}
+                aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className={`w-6 h-0.5 transition-all duration-300 ${
-                    scrolled ? 'bg-gray-600' : 'bg-white'
-                  } ${isOpen ? 'rotate-45 translate-y-1.5' : '-translate-y-1'}`} />
-                  <div className={`w-6 h-0.5 transition-all duration-300 my-1 ${
-                    scrolled ? 'bg-gray-600' : 'bg-white'
-                  } ${isOpen ? 'opacity-0' : 'opacity-100'}`} />
-                  <div className={`w-6 h-0.5 transition-all duration-300 ${
-                    scrolled ? 'bg-gray-600' : 'bg-white'
-                  } ${isOpen ? '-rotate-45 -translate-y-1.5' : 'translate-y-1'}`} />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+                  <div
+                    className={`h-0.5 w-6 transition-all duration-300 ${
+                      scrolled ? 'bg-gray-600' : 'bg-white'
+                    } ${isOpen ? 'translate-y-1.5 rotate-45' : '-translate-y-1'}`}
+                  />
+                  <div
+                    className={`my-1 h-0.5 w-6 transition-all duration-300 ${
+                      scrolled ? 'bg-gray-600' : 'bg-white'
+                    } ${isOpen ? 'opacity-0' : 'opacity-100'}`}
+                  />
+                  <div
+                    className={`h-0.5 w-6 transition-all duration-300 ${
+                      scrolled ? 'bg-gray-600' : 'bg-white'
+                    } ${isOpen ? '-translate-y-1.5 -rotate-45' : 'translate-y-1'}`}
+                  />
                 </div>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div 
-          className={`lg:hidden absolute top-full left-0 w-full bg-white shadow-2xl transition-all duration-500 ease-in-out ${
-            isOpen 
-              ? 'opacity-100 translate-y-0 visible' 
-              : 'opacity-0 -translate-y-4 invisible'
+        <div
+          className={`absolute left-0 top-full w-full bg-white shadow-2xl transition-all duration-500 ease-in-out lg:hidden ${
+            isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-4 opacity-0'
           }`}
         >
           <div className="max-h-[80vh] overflow-y-auto">
-            {/* User Profile Section */}
-            <div className="p-4 bg-gradient-to-r from-blue-600 to-blue-800">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <span className="text-2xl">👤</span>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                  <span className="text-lg font-bold text-white">{initials || 'JP'}</span>
                 </div>
                 <div>
-                  <p className="text-white font-semibold">John Doe</p>
-                  <p className="text-blue-100 text-sm">john@example.com</p>
+                  <p className="font-semibold text-white">
+                    {currentUser?.name || 'Welcome to JobPortal'}
+                  </p>
+                  <p className="text-sm text-blue-100">
+                    {currentUser?.email || 'Find your next opportunity'}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Menu Items */}
-            <div className="p-4 space-y-4">
-              {/* Public Menu */}
+            <div className="space-y-4 p-4">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
                   Browse
                 </p>
-                {publicLinks.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.to === '/'}
-                  >
-                    {({ isActive }) => (
-                      <div className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                        isActive
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-gray-600 hover:bg-gray-50'
-                      }`}>
-                        <span className="text-xl w-6">{item.icon}</span>
-                        <span className="font-medium">{item.label}</span>
-                        {isActive && (
-                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />
-                        )}
-                      </div>
-                    )}
-                  </NavLink>
-                ))}
+                {publicLinks.map((item) => renderNavItem(item, true))}
               </div>
 
-              {/* Private Menu */}
               {isLoggedIn && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
+                  <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
                     Your Account
                   </p>
-                  {privateLinks.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                    >
-                      {({ isActive }) => (
-                        <div className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                          isActive
-                            ? 'bg-purple-50 text-purple-600'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}>
-                          <span className="text-xl w-6">{item.icon}</span>
-                          <span className="font-medium">{item.label}</span>
-                        </div>
-                      )}
-                    </NavLink>
-                  ))}
+                  {privateLinks.map((item) => renderNavItem(item, true))}
                 </div>
               )}
 
-              {/* Admin Menu */}
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
-                  Administration
-                </p>
-                <NavLink to="/admin">
-                  {({ isActive }) => (
-                    <div className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      isActive
-                        ? 'bg-purple-50 text-purple-600'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}>
-                      <span className="text-xl w-6">⚙️</span>
-                      <span className="font-medium">Admin Panel</span>
-                      {isActive && (
-                        <span className="ml-auto text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
-                          Active
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </NavLink>
-              </div>
+              {isAdmin && (
+                <div>
+                  <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    Administration
+                  </p>
+                  <NavLink to="/admin" onClick={closeMenu}>
+                    {({ isActive }) => (
+                      <div
+                        className={`flex items-center space-x-3 rounded-xl px-3 py-3 transition-all duration-200 ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="w-6 text-xl">⚙️</span>
+                        <span className="font-medium">Admin Panel</span>
+                      </div>
+                    )}
+                  </NavLink>
+                </div>
+              )}
 
-              {/* Auth Section */}
-              {!isLoggedIn && (
-                <div className="pt-4 border-t border-gray-200 space-y-2">
+              {!isLoggedIn ? (
+                <div className="space-y-2 border-t border-gray-200 pt-4">
                   <NavLink
                     to="/login"
+                    onClick={closeMenu}
                     className={({ isActive }) =>
-                      `block w-full text-center px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                      `block w-full rounded-xl px-4 py-3 text-center font-semibold transition-all duration-200 ${
                         isActive
                           ? 'bg-blue-700 text-white'
                           : 'bg-blue-600 text-white hover:bg-blue-700'
                       }`
                     }
                   >
-                    <span className="flex items-center justify-center space-x-2">
-                      <span>🔑</span>
-                      <span>Login</span>
-                    </span>
+                    Login
                   </NavLink>
                   <NavLink
                     to="/signup"
+                    onClick={closeMenu}
                     className={({ isActive }) =>
-                      `block w-full text-center px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                      `block w-full rounded-xl px-4 py-3 text-center font-semibold transition-all duration-200 ${
                         isActive
-                          ? 'bg-blue-100 text-blue-700 border-2 border-blue-700'
+                          ? 'border-2 border-blue-700 bg-blue-100 text-blue-700'
                           : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
                       }`
                     }
                   >
-                    <span className="flex items-center justify-center space-x-2">
-                      <span>📝</span>
-                      <span>Sign Up</span>
-                    </span>
+                    Sign Up
                   </NavLink>
                 </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full rounded-xl border border-red-200 px-4 py-3 text-center font-semibold text-red-600 transition-colors hover:bg-red-50"
+                >
+                  Logout
+                </button>
               )}
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Spacer for fixed navbar */}
-      <div className="h-20 lg:h-24" />
+      <div className={location.pathname === '/' ? 'h-20 lg:h-24' : 'h-20'} />
     </>
   );
 };
 
 export default Navbar;
-

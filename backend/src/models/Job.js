@@ -21,6 +21,10 @@ const jobSchema = new mongoose.Schema({
   salary: {
     type: String,
   },
+  category: {
+    type: String,
+    default: 'General',
+  },
   description: {
     type: String,
     required: true,

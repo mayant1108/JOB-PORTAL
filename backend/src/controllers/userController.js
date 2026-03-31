@@ -7,6 +7,22 @@ const generateToken = (id) => {
   });
 };
 
+const buildUserPayload = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  isAdmin: user.isAdmin,
+  phone: user.phone,
+  location: user.location,
+  title: user.title,
+  company: user.company,
+  about: user.about,
+  skills: user.skills,
+  linkedin: user.linkedin,
+  github: user.github,
+  website: user.website,
+});
+
 // @desc    Register a new user
 // @route   POST /api/users/signup
 // @access  Public
@@ -28,12 +44,11 @@ const registerUser = async (req, res) => {
     const user = await User.create({ name, email, password });
 
     if (user) {
+      const userPayload = buildUserPayload(user);
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
+        ...userPayload,
         token: generateToken(user._id),
+        user: userPayload,
       });
     }
   } catch (error) {
@@ -55,20 +70,11 @@ const authUser = async (req, res) => {
     const user = await User.findOne({ email });
     
     if (user && (await user.matchPassword(password))) {
+      const userPayload = buildUserPayload(user);
       res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        phone: user.phone,
-        location: user.location,
-        title: user.title,
-        about: user.about,
-        skills: user.skills,
-        linkedin: user.linkedin,
-        github: user.github,
-        website: user.website,
+        ...userPayload,
         token: generateToken(user._id),
+        user: userPayload,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -85,19 +91,10 @@ const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (user) {
+      const userPayload = buildUserPayload(user);
       res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        phone: user.phone,
-        location: user.location,
-        title: user.title,
-        about: user.about,
-        skills: user.skills,
-        linkedin: user.linkedin,
-        github: user.github,
-        website: user.website,
+        ...userPayload,
+        user: userPayload,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -120,6 +117,7 @@ const updateUserProfile = async (req, res) => {
       user.phone = req.body.phone || user.phone;
       user.location = req.body.location || user.location;
       user.title = req.body.title || user.title;
+      user.company = req.body.company || user.company;
       user.about = req.body.about || user.about;
       user.skills = req.body.skills || user.skills;
       user.linkedin = req.body.linkedin || user.linkedin;
@@ -131,21 +129,12 @@ const updateUserProfile = async (req, res) => {
       }
 
       const updatedUser = await user.save();
+      const userPayload = buildUserPayload(updatedUser);
       
       res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        isAdmin: updatedUser.isAdmin,
-        phone: updatedUser.phone,
-        location: updatedUser.location,
-        title: updatedUser.title,
-        about: updatedUser.about,
-        skills: updatedUser.skills,
-        linkedin: updatedUser.linkedin,
-        github: updatedUser.github,
-        website: updatedUser.website,
+        ...userPayload,
         token: generateToken(updatedUser._id),
+        user: userPayload,
       });
     } else {
       res.status(404).json({ message: 'User not found' });

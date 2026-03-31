@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../services/api';
 
 const Companies = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedIndustry, setSelectedIndustry] = useState('All');
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [selectedIndustry, setSelectedIndustry] = useState(
+    () => searchParams.get('industry') || 'All'
+  );
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companyJobs, setCompanyJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
 
   const industries = ['All', 'Technology', 'Finance', 'Healthcare', 'Education', 'Retail', 'Manufacturing'];
 
@@ -29,28 +33,53 @@ const Companies = () => {
     fetchCompanies();
   }, []);
 
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+    setSelectedIndustry(searchParams.get('industry') || 'All');
+  }, [searchParams]);
+
+  const updateQueryParam = (key, value) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (!value || value === 'All') {
+      nextParams.delete(key);
+    } else {
+      nextParams.set(key, value);
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const handleCompanyClick = async (company) => {
     setSelectedCompany(company);
     try {
+      setJobsLoading(true);
       const jobs = await jobAPI.getJobsByCompany(company.name);
       setCompanyJobs(jobs);
     } catch (err) {
       console.error('Failed to fetch company jobs:', err);
       setCompanyJobs([]);
+    } finally {
+      setJobsLoading(false);
     }
   };
 
   const closeModal = () => {
     setSelectedCompany(null);
     setCompanyJobs([]);
+    setJobsLoading(false);
   };
 
   const filteredCompanies = companies.filter(company => {
-    const matchesSearch = (company.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                          (company.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                          (company.location?.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesIndustry = selectedIndustry === 'All' || 
-                            (company.industry?.toLowerCase().includes(selectedIndustry.toLowerCase()));
+    const normalizedSearch = searchTerm.toLowerCase();
+    const matchesSearch =
+      !normalizedSearch ||
+      [company.name, company.description, company.location]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalizedSearch));
+    const matchesIndustry =
+      selectedIndustry === 'All' ||
+      company.industry?.toLowerCase().includes(selectedIndustry.toLowerCase());
     return matchesSearch && matchesIndustry;
   });
 
@@ -63,6 +92,24 @@ const Companies = () => {
             Browse Companies
           </h1>
           <p className="text-blue-100">Discover {companies.length} great companies hiring now</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <p className="text-sm text-blue-100">Hiring teams</p>
+              <p className="mt-2 text-2xl font-bold text-white">{companies.length || 0}</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <p className="text-sm text-blue-100">Open jobs listed</p>
+              <p className="mt-2 text-2xl font-bold text-white">
+                {companies.reduce((total, company) => total + (company.jobCount || 0), 0)}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <p className="text-sm text-blue-100">Industries covered</p>
+              <p className="mt-2 text-2xl font-bold text-white">
+                {new Set(companies.map((company) => company.industry).filter(Boolean)).size || 1}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -88,7 +135,7 @@ const Companies = () => {
                   placeholder="Company name or location"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => updateQueryParam('search', e.target.value)}
                 />
               </div>
 
@@ -97,7 +144,7 @@ const Companies = () => {
                 <select
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                   value={selectedIndustry}
-                  onChange={(e) => setSelectedIndustry(e.target.value)}
+                  onChange={(e) => updateQueryParam('industry', e.target.value)}
                 >
                   {industries.map(ind => (
                     <option key={ind} value={ind}>{ind}</option>
@@ -107,8 +154,7 @@ const Companies = () => {
 
               <button
                 onClick={() => {
-                  setSearchTerm('');
-                  setSelectedIndustry('All');
+                  setSearchParams(new URLSearchParams(), { replace: true });
                 }}
                 className="w-full py-3 px-4 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors font-medium"
               >
@@ -120,9 +166,23 @@ const Companies = () => {
           {/* Companies Grid */}
           <div className="lg:w-3/4">
             <div className="flex justify-between items-center mb-6">
-              <p className="text-gray-600">
-                Showing <span className="font-bold text-gray-900">{filteredCompanies.length}</span> companies
-              </p>
+              <div>
+                <p className="text-gray-600">
+                  Showing <span className="font-bold text-gray-900">{filteredCompanies.length}</span> companies
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {searchTerm && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+                      Search: {searchTerm}
+                    </span>
+                  )}
+                  {selectedIndustry !== 'All' && (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+                      Industry: {selectedIndustry}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {loading ? (
@@ -271,7 +331,9 @@ const Companies = () => {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">
                     Open Positions ({companyJobs.length})
                   </h3>
-                  {companyJobs.length === 0 ? (
+                  {jobsLoading ? (
+                    <p className="py-4 text-center text-gray-500">Loading open positions...</p>
+                  ) : companyJobs.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">No open positions at the moment</p>
                   ) : (
                     <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -287,7 +349,7 @@ const Companies = () => {
                               </div>
                             </div>
                             <Link 
-                              to="/jobs"
+                              to={`/jobs?search=${encodeURIComponent(job.title || selectedCompany.name)}`}
                               className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
                             >
                               View
