@@ -1,0 +1,13 @@
+
+> job-portal@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m577[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m3000[22m/[39m
+[2m1:10:09 pm[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/main.jsx[22m
+[2m1:10:27 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Navbar.jsx, /src/index.css[22m
+[2m1:10:48 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Home.jsx, /src/index.css[22m
+[2m1:24:01 pm[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist/index.html[22m
+[2m1:24:01 pm[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist/index.html[22m
