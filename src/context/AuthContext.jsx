@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import api from '../services/api.js';
 
 const AuthContext = createContext();
 
@@ -15,69 +16,80 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('jobPortalUser');
-    if (savedUser) {
+    const token = localStorage.getItem('token');
+    const savedUser =
+      localStorage.getItem('jobPortalUser') || localStorage.getItem('user');
+
+    if (savedUser && token) {
       setUser(JSON.parse(savedUser));
     }
     setLoading(false);
   }, []);
 
-  const persistUser = (profile) => {
+  const persistUser = (profile, token) => {
     localStorage.setItem('jobPortalUser', JSON.stringify(profile));
-    localStorage.setItem('token', profile.token);
+    localStorage.setItem('user', JSON.stringify(profile));
+    localStorage.setItem('token', token);
     setUser(profile);
   };
 
-  const login = async (credentials = {}) => {
-    try {
-      const role = credentials.role || 'candidate';
-      const profile = {
-        id: Date.now(),
-        name: role === 'candidate' ? 'Aarav Sharma' : 'Riya Mehta',
-        email: credentials.email || 'user@example.com',
-        phone: credentials.phone || '9876543210',
-        role,
-        token: `demo-${role}-token`,
-        verified: true,
-      };
+  const updateStoredUser = (profile) => {
+    if (!profile) {
+      return;
+    }
 
-      persistUser(profile);
-      return { success: true, user: profile };
+    localStorage.setItem('jobPortalUser', JSON.stringify(profile));
+    localStorage.setItem('user', JSON.stringify(profile));
+    setUser(profile);
+  };
+
+  const login = async (credentials) => {
+    try {
+      const response = await api.login(credentials);
+      if (response.success) {
+        persistUser(response.user, response.token);
+        return response;
+      }
+      return {
+        success: false,
+        message: response.message || response.error || 'Login failed',
+      };
     } catch (error) {
-      return { success: false, error: 'Unable to login right now' };
+      return {
+        success: false,
+        message: error.message || 'Network error. Check backend server.',
+      };
     }
   };
 
-  const signup = async (userData = {}) => {
+  const signup = async (userData) => {
     try {
-      const role = userData.role || 'candidate';
-      const profile = {
-        id: Date.now(),
-        name: `${userData.firstName || 'Demo'} ${userData.lastName || 'User'}`,
-        email: userData.email || 'user@example.com',
-        phone: userData.phone || '',
-        companyName: userData.companyName || '',
-        role,
-        token: `demo-${role}-token`,
-        verified: true,
-        pendingAdminApproval: role === 'candidate',
+      const response = await api.signup(userData);
+      if (response.success) {
+        persistUser(response.user, response.token);
+        return response;
+      }
+      return {
+        success: false,
+        message: response.message || response.error || 'Signup failed',
       };
-
-      persistUser(profile);
-      return { success: true, user: profile };
     } catch (error) {
-      return { success: false, error: 'Unable to create account right now' };
+      return {
+        success: false,
+        message: error.message || 'Network error. Check backend server.',
+      };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('jobPortalUser');
+    localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser: updateStoredUser, login, signup, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );
