@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { formatCompactNumber, normalizeJob } from '../utils/helpers';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 
 const JobSearch = () => {
   const [searchParams, setSearchParams] = useSearchParams();
